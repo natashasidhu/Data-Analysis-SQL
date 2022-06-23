@@ -50,5 +50,34 @@ FROM
   LEFT JOIN Activity b
   ON a.player_id = b.player_id AND a.event_date+1 = b.event_date;
   
-  
+  --Game Play Analysis V | Hard |
+  --We define the install date of a player to be the first login day of that player. We also define day 1 retention of some date X to be the number of players
+ -- whose install date is X and they logged back in on the day right after X , divided by the number of players whose install date is X, rounded to 2 decimal places.
+  --Write an SQL query that reports for each install date, the number of players that installed the game on that day and the day 1 retention. 
+--Result table:
++------------+----------+----------------+
+| install_dt | installs | Day1_retention |
++------------+----------+----------------+
+| 2016-03-01 | 2        | 0.50           |
+| 2017-06-25 | 1        | 0.00           |
++------------+----------+----------------+
 
+--solution:
+
+
+SELECT
+    install_dt,
+    COUNT(player_id) installs,
+    ROUND(COUNT(retention)/COUNT(player_id),2) Day1_retention  
+FROM
+    (
+    SELECT a.player_id, a.install_dt, b.event_date retention 
+    FROM
+        (SELECT player_id, MIN(event_date) install_dt   
+        FROM Activity
+        GROUP BY player_id) a LEFT JOIN Activity b ON   
+            a.player_id = b.player_id AND
+            a.install_dt + 1=b.event_date
+    ) AS tmp
+GROUP BY
+    install_dt
