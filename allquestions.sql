@@ -12,12 +12,6 @@
 | 6  | 2   |
 | 7  | 2   |
 +----+-----+
---Result table:
-+-----------------+
-| ConsecutiveNums |
-+-----------------+
-| 1               |
-+-----------------+
 
 --solution:
 SELECT DISTINCT a.num AS consecutivenum FROM logs a
