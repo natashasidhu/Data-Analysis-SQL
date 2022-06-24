@@ -153,4 +153,156 @@ WHERE occurences > event_avg
 GROUP BY business_id
 HAVING COUNT(event_type) > 1
 
---
+--Find the Team Size | Easy |
+--Employee Table:
++-------------+------------+
+| employee_id | team_id    |
++-------------+------------+
+|     1       |     8      |
+|     2       |     8      |
+|     3       |     8      |
+|     4       |     7      |
+|     5       |     9      |
+|     6       |     9      |
++-------------+------------+
+--Write an SQL query to find the team size of each of the employees.
+
+--solution:
+
+SELECT employee_id, b.team_size
+FROM employee e
+JOIN
+(
+SELECT team_id, count(team_id) AS team_size
+FROM employee
+GROUP BY team_id) b
+ON e.team_id = b.team_id
+
+--Customers Who Bought Products A and B but Not C | Medium | 
+--Customers table:
++-------------+---------------+
+| customer_id | customer_name |
++-------------+---------------+
+| 1           | Daniel        |
+| 2           | Diana         |
+| 3           | Elizabeth     |
+| 4           | Jhon          |
++-------------+---------------+
+--Orders table:
++------------+--------------+---------------+
+| order_id   | customer_id  | product_name  |
++------------+--------------+---------------+
+| 10         |     1        |     A         |
+| 20         |     1        |     B         |
+| 30         |     1        |     D         |
+| 40         |     1        |     C         |
+| 50         |     2        |     A         |
+| 60         |     3        |     A         |
+| 70         |     3        |     B         |
+| 80         |     3        |     D         |
+| 90         |     4        |     C         |
++------------+--------------+---------------+
+--Write an SQL query to report the customerid and customername of customers who bought products “A”, “B” but did not buy the product “C” 
+--Return the result table ordered by customer_id.
+
+--solution:
+WITH t1 AS
+(
+SELECT customer_id
+FROM orders
+WHERE product_name = 'B' AND
+customer_id IN (SELECT customer_id
+FROM orders
+WHERE product_name = 'A'))
+
+SELECT t1.customer_id, c.customer_name
+FROM t1 JOIN customers c
+ON t1.customer_id = c.customer_id
+WHERE t1.customer_id != all(SELECT customer_id
+FROM orders
+WHERE product_name = 'C')
+
+--Calculate Salaries | Medium |
+--Salaries table:
++------------+-------------+---------------+--------+
+| company_id | employee_id | employee_name | salary |
++------------+-------------+---------------+--------+
+| 1          | 1           | Tony          | 2000   |
+| 1          | 2           | Pronub        | 21300  |
+| 1          | 3           | Tyrrox        | 10800  |
+| 2          | 1           | Pam           | 300    |
+| 2          | 7           | Bassem        | 450    |
+| 2          | 9           | Hermione      | 700    |
+| 3          | 7           | Bocaben       | 100    |
+| 3          | 2           | Ognjen        | 2200   |
+| 3          | 13          | Nyancat       | 3300   |
+| 3          | 15          | Morninngcat   | 1866   |
++------------+-------------+---------------+--------+
+
+--Write an SQL query to find the salaries of the employees after applying taxes.
+
+--The tax rate is calculated for each company based on the following criteria:
+
+--0% If the max salary of any employee in the company is less than 1000$.
+--24% If the max salary of any employee in the company is in the range [1000, 10000] inclusive.
+--49% If the max salary of any employee in the company is greater than 10000$.
+--Return the result table in any order. Round the salary to the nearest integer.
+
+--solution:
+SELECT Salaries.company_id, Salaries.employee_id, Salaries.employee_name,
+    ROUND(CASE WHEN salary_max<1000 THEN Salaries.salary
+               WHEN salary_max>=1000 AND salary_max<=10000 THEN Salaries.salary * 0.76
+               ELSE Salaries.salary * 0.51 END, 0) AS salary
+FROM Salaries INNER JOIN (
+    SELECT company_id, MAX(salary) AS salary_max
+    FROM Salaries
+    GROUP BY company_id) AS t
+ON Salaries.company_id = t.company_id
+
+--Result table:
++------------+-------------+---------------+--------+
+| company_id | employee_id | employee_name | salary |
++------------+-------------+---------------+--------+
+| 1          | 1           | Tony          | 1020   |
+| 1          | 2           | Pronub        | 10863  |
+| 1          | 3           | Tyrrox        | 5508   |
+| 2          | 1           | Pam           | 300    |
+| 2          | 7           | Bassem        | 450    |
+| 2          | 9           | Hermione      | 700    |
+| 3          | 7           | Bocaben       | 76     |
+| 3          | 2           | Ognjen        | 1672   |
+| 3          | 13          | Nyancat       | 2508   |
+| 3          | 15          | Morninngcat   | 5911   |
++------------+-------------+---------------+--------+
+
+--Group Sold Products By The Date | Easy | 
+--Activities table:
++------------+-------------+
+| sell_date  | product     |
++------------+-------------+
+| 2020-05-30 | Headphone   |
+| 2020-06-01 | Pencil      |
+| 2020-06-02 | Mask        |
+| 2020-05-30 | Basketball  |
+| 2020-06-01 | Bible       |
+| 2020-06-02 | Mask        |
+| 2020-05-30 | T-Shirt     |
++------------+-------------+
+--Write an SQL query to find for each date, the number of distinct products sold and their names.
+--The sold-products names for each date should be sorted lexicographically. Return the result table ordered by sell_date.
+
+--solution:
+
+SELECT sell_date, COUNT(DISTINCT product) AS num_sold, group_concat(DISTINCT product) AS products
+FROM activities
+GROUP BY 1
+ORDER BY 1
+
+--Result table:
++------------+----------+------------------------------+
+| sell_date  | num_sold | products                     |
++------------+----------+------------------------------+
+| 2020-05-30 | 3        | Basketball,Headphone,T-shirt |
+| 2020-06-01 | 2        | Bible,Pencil                 |
+| 2020-06-02 | 1        | Mask                         |
++------------+----------+------------------------------+
