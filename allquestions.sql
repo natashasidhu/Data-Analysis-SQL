@@ -329,8 +329,64 @@ WHERE YEAR(sale_date)='2020'
 )
 ORDER BY seller_name;
 
+--Fix Names in a Table | Easy |
+--Write an SQL query to fix the names so that only the first character is uppercase and the rest are lowercase.
+--Users table:
++---------+-------+
+| user_id | name  |
++---------+-------+
+| 1       | aLice |
+| 2       | bOB   |
++---------+-------+
 
+--solution:
 
+select user_id,
+    CONCAT(UPPER(LEFT(name,1)),LOWER(SUBSTRING(name,2))) AS name
+FROM Users
+ORDER BY user_id
 
+--Result table:
++---------+-------+
+| user_id | name  |
++---------+-------+
+| 1       | Alice |
+| 2       | Bob   |
++---------+-------+
+
+--Biggest Window Between Visits | Medium |
+--Assume today’s date is '2021-1-1'.
+--Write an SQL query that will, for each user_id, find out the largest window of days between each visit and the one right after it (or today if you are considering the last visit).
+--UserVisits table:
++---------+------------+
+| user_id | visit_date |
++---------+------------+
+| 1       | 2020-11-28 |
+| 1       | 2020-10-20 |
+| 1       | 2020-12-3  |
+| 2       | 2020-10-5  |
+| 2       | 2020-12-9  |
+| 3       | 2020-11-11 |
++---------+------------+
+
+--solution:
+SELECT user_id, max(diff) AS biggest_window
+FROM
+(
+    SELECT user_id,
+       datediff(coalesce(lead(visit_date) OVER (PARTITION BY user_id ORDER BY visit_date), '2021-01-01'), visit_date) AS diff
+    FROM userVisits
+) t
+GROUP BY user_id
+ORDER BY user_id
+
+--Result table:
++---------+---------------+
+| user_id | biggest_window|
++---------+---------------+
+| 1       | 39            |
+| 2       | 65            |
+| 3       | 51            |
++---------+---------------+
 
  
