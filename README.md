@@ -1,2 +1,2 @@
 # SQL-
-SQL problems from level easy to hard 
+SQL projects level easy to hard
